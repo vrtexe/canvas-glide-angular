@@ -129,7 +129,7 @@ The image and HTML renderers load PNG, JPEG, GIF, WebP, AVIF and BMP through a `
 
 ## Development
 
-The library is the `canvas-glide` project in this Angular workspace (`projects/canvas-glide`), and the workspace app in `src/` is a demo that uses it. `canvas-glide` is listed in the library's `dependencies` (`^1.0.1`) and linked from `../lib` in the workspace's `devDependencies`. Build `lib` first, then:
+The library is the `canvas-glide` project in this Angular workspace (`projects/canvas-glide`), and the workspace app in `src/` is a demo that uses it. The library lists `canvas-glide` in its `dependencies` (`^1.0.1`), and the workspace installs it from npm. To work against an unreleased engine, build it and run `npm link ../lib` (the path to a local `canvas-glide` checkout); `npm install` restores the published version. The usual commands:
 
 ```sh
 npm install
@@ -139,6 +139,8 @@ npx ng build
 ```
 
 `ng test canvas-glide` runs the Vitest suite in jsdom, with the 2D context, `createImageBitmap` and `ResizeObserver` stubbed, and one server render with `@angular/platform-server`. `ng build canvas-glide` writes the package to `dist/canvas-glide-angular` with ng-packagr; `ng build` builds the demo, which imports the library from there.
+
+Publishing a GitHub release runs `.github/workflows/npm-publish.yml`: it tests the library, builds it and the demo from the tag, sets `projects/canvas-glide/package.json` on the default branch to the release version, and stages the package on npm with trusted publishing; `npm stage approve` publishes it.
 
 ## License
 
