@@ -1,12 +1,61 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, effect, signal } from '@angular/core';
+import { GlideCanvas, Renderer } from '@canvas-glide/angular';
+
+type Tab = 'canvas' | 'img' | 'html';
+type Theme = 'light' | 'dark' | 'auto';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [GlideCanvas],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('angular');
+  protected readonly tabs: { value: Tab; label: string; renderer: Renderer }[] = [
+    { value: 'canvas', label: 'Canvas', renderer: Renderer.Canvas },
+    { value: 'img', label: 'Image', renderer: Renderer.Image },
+    { value: 'html', label: 'html', renderer: Renderer.Html },
+  ];
+  protected readonly themes: { value: Theme; label: string }[] = [
+    { value: 'auto', label: 'Auto' },
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+  ];
+
+  protected readonly tab = signal(this.tabs[0]);
+  protected readonly theme = signal<Theme>(this.initialTheme());
+  protected readonly themeOpen = signal(false);
+  protected readonly file = signal<File | null>(null);
+
+  constructor() {
+    effect(() => {
+      const theme = this.theme();
+      if (theme === 'auto') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    });
+  }
+
+  protected themeLabel(value: Theme) {
+    return this.themes.find((option) => option.value === value)?.label;
+  }
+
+  protected onUpload(event: Event) {
+    this.file.set((event.target as HTMLInputElement).files?.[0] ?? null);
+  }
+
+  protected clear(upload: HTMLInputElement) {
+    upload.value = '';
+    this.file.set(null);
+  }
+
+  protected chooseTheme(value: Theme) {
+    this.theme.set(value);
+    this.themeOpen.set(false);
+  }
+
+  private initialTheme(): Theme {
+    const saved = localStorage.getItem('theme');
+    return saved === 'light' || saved === 'dark' || saved === 'auto' ? saved : 'auto';
+  }
 }

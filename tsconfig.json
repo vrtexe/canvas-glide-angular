@@ -3,6 +3,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "@canvas-glide/angular": ["./dist/canvas-glide-angular"]
+    },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
@@ -26,6 +29,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/canvas-glide/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/canvas-glide/tsconfig.spec.json"
     }
   ]
 }

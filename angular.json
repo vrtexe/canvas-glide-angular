@@ -38,8 +38,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "8kB",
+                  "maximumError": "16kB"
                 }
               ],
               "outputHashing": "all"
@@ -66,6 +66,32 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "canvas-glide": {
+      "projectType": "library",
+      "root": "projects/canvas-glide",
+      "sourceRoot": "projects/canvas-glide/src",
+      "prefix": "glide",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/canvas-glide/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/canvas-glide/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/canvas-glide/tsconfig.spec.json"
+          }
         }
       }
     }

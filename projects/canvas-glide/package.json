@@ -1,0 +1,37 @@
+{
+  "name": "@canvas-glide/angular",
+  "version": "1.0.0",
+  "description": "Angular directive and component for canvas-glide: pan, zoom and pinch-to-zoom for images or any content, with signals for the transform and mouse, touch, pen and wheel input.",
+  "keywords": [
+    "angular",
+    "angular-library",
+    "angular-directive",
+    "angular-component",
+    "signals",
+    "pan-zoom",
+    "panzoom",
+    "pinch-zoom",
+    "pinch-to-zoom",
+    "zoom",
+    "pan",
+    "image-viewer",
+    "image-zoom",
+    "canvas",
+    "gestures",
+    "touch",
+    "typescript"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0"
+  },
+  "dependencies": {
+    "canvas-glide": "^1.0.1",
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
