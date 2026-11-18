@@ -4,13 +4,29 @@ import { GlideCanvas, Renderer } from './glide-canvas';
 import { GlideViewport, type GlideOptions } from './glide-viewport';
 
 // jsdom has no layout, no ResizeObserver, no pointer capture, no 2D context and no createImageBitmap.
-globalThis.ResizeObserver ??= class {
-  observe() {}
+// Every element has the size `layout`; `resize()` runs the ResizeObserver callbacks after changing it.
+let layout = { width: 1000, height: 700 };
+const resizeCallbacks = new Set<() => void>();
+globalThis.ResizeObserver = class {
+  readonly #callback: () => void;
+  constructor(callback: () => void) {
+    this.#callback = callback;
+  }
+  observe() {
+    resizeCallbacks.add(this.#callback);
+  }
   unobserve() {}
-  disconnect() {}
+  disconnect() {
+    resizeCallbacks.delete(this.#callback);
+  }
+} as unknown as typeof ResizeObserver;
+const resize = (size: typeof layout) => {
+  layout = size;
+  resizeCallbacks.forEach((callback) => callback());
 };
-Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => 1000 });
-Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 700 });
+Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => layout.width });
+Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => layout.height });
+HTMLElement.prototype.getBoundingClientRect = () => ({ x: 0, y: 0, ...layout }) as DOMRect;
 Element.prototype.setPointerCapture ??= () => {};
 Element.prototype.hasPointerCapture ??= () => false;
 Element.prototype.releasePointerCapture ??= () => {};
@@ -145,7 +161,10 @@ async function canvasHost(setup: (host: CanvasHost) => void = () => {}) {
 }
 
 describe('GlideCanvas', () => {
-  afterEach(() => setDevicePixelRatio(1));
+  afterEach(() => {
+    setDevicePixelRatio(1);
+    layout = { width: 1000, height: 700 };
+  });
 
   it('clears the canvas when the image is removed', async () => {
     const { fixture, host, element } = await canvasHost();
@@ -192,5 +211,37 @@ describe('GlideCanvas', () => {
     host.viewer().glide.zoomTo(2, { x: 0, y: 0 });
     await settle(fixture);
     expect(overlay.style.transform).toMatch(/^scale\(2\)/);
+  });
+
+  for (const renderer of [Renderer.Canvas, Renderer.Image, Renderer.Html]) {
+    it(`fits a new image in the ${renderer} renderer once the viewport has a size`, async () => {
+      layout = { width: 0, height: 0 };
+      const { fixture, host, element } = await canvasHost((h) => h.renderer.set(renderer));
+      const img = element.querySelector('img');
+      if (img) {
+        Object.defineProperties(img, { naturalWidth: { value: 300 }, naturalHeight: { value: 300 } });
+        img.dispatchEvent(new Event('load'));
+        await settle(fixture);
+      }
+
+      resize({ width: 1000, height: 700 });
+      await settle(fixture);
+
+      const { glide } = host.viewer();
+      expect(glide.contentSize()).toEqual({ width: 700, height: 700 });
+      expect(glide.engine.getTransform()).toEqual({ origin: { x: -150, y: 0 }, scale: 1 });
+    });
+  }
+
+  it('keeps the view when the viewport is resized after the image was fitted', async () => {
+    const { fixture, host } = await canvasHost();
+    const { glide } = host.viewer();
+    const fitted = glide.engine.getTransform();
+
+    resize({ width: 800, height: 700 });
+    await settle(fixture);
+
+    expect(glide.contentSize()).toEqual({ width: 700, height: 700 });
+    expect(glide.engine.getTransform()).toEqual(fitted);
   });
 });

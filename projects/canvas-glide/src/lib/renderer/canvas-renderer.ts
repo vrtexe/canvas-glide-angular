@@ -1,9 +1,9 @@
-import { Component, ElementRef, afterRenderEffect, effect, inject, input, PLATFORM_ID, resource, untracked, viewChild } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, effect, inject, input, PLATFORM_ID, resource, viewChild } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { GlideViewport } from '../glide-viewport';
 import { drawImage } from '../util/draw';
 import { createImageBitmapSafe } from '../util/image';
-import { fitInto } from '../util/size';
+import { fitContent } from './image-source';
 
 @Component({
   selector: 'glide-canvas-renderer',
@@ -27,20 +27,7 @@ export class CanvasRenderer {
       onCleanup(() => bitmap?.close());
     });
 
-    // A new image is fitted once; a resize keeps the view and only updates the content size.
-    effect(() => {
-      const bitmap = this.#bitmap.value();
-      untracked(() => {
-        this.#glide.contentSize.set(bitmap ? fitInto(this.#glide.viewportSize(), bitmap) : null);
-        if (bitmap) this.#glide.fit();
-      });
-    });
-
-    effect(() => {
-      const viewportSize = this.#glide.viewportSize();
-      const bitmap = untracked(this.#bitmap.value);
-      if (bitmap) this.#glide.contentSize.set(fitInto(viewportSize, bitmap));
-    });
+    fitContent(this.#bitmap.value);
 
     afterRenderEffect(() => {
       drawImage(
