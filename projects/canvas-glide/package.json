@@ -1,6 +1,6 @@
 {
   "name": "@canvas-glide/angular",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Angular directive and component for canvas-glide: pan, zoom and pinch-to-zoom for images or any content, with signals for the transform and mouse, touch, pen and wheel input.",
   "keywords": [
     "angular",
